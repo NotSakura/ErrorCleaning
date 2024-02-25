@@ -1,0 +1,140 @@
+---
+title: "Errors in Cleaning Data"
+author: "Shreya Sakura Noskor"
+format: pdf
+date: today
+date-format: long
+number-sections: true
+bibliography: references.bib
+---
+
+
+
+```{r}
+#| echo: false
+#| warning: false
+#| label: tbl-trueData
+#| tbl-cap: The Raw Data
+
+library(tidyverse)
+library(ggplot2)
+library(knitr)
+library(dplyr)
+
+## The initial data
+data <- rnorm(1000, mean = 1, sd = 1)
+
+set.seed(853)
+head(data) |> kable()
+```
+
+# Introduction
+
+
+
+
+
+# The Errors
+
+## Situation 1
+```{r}
+#| echo: false
+#| warning: false
+#| label: fig-memory
+#| fig-cap: Memory/Measuremnet Error when cleaning
+
+mem_err <- data
+mem_err[900:1000] <- data[0:100]
+# This is just to check if the last digits are all different
+check = (tail(mem_err) == tail(data))
+
+print(mean(mem_err))
+
+mem_err <- data.frame(x = mem_err)
+ggplot(mem_err, aes(x = x)) +
+  geom_histogram(binwidth = 0.2) +
+  labs(title = "Memory/Measuremnet Error when cleaning",
+       x = "Value",
+       y = "Frequency")
+```
+
+
+
+## Situation 2
+
+```{r}
+#| echo: false
+#| warning: false
+#| label: fig-neg
+#| fig-cap: Handleing Negative Error when cleaning
+#| 
+neg_data <- data
+neg_indices <- which(neg_data < 0)
+
+# Select the first half of these indices
+neg_indices <- neg_indices[1:(length(neg_indices) %/% 2)]
+
+# Change half of the negative draws to be positive
+neg_data[neg_indices] <- abs(neg_data[neg_indices])
+
+print(mean(neg_data))
+
+neg_data <- data.frame(x = neg_data)
+ggplot(neg_data, aes(x = x)) +
+  geom_histogram(binwidth = 0.2) +
+  labs(title = "Negative Error when cleaning",
+       x = "Value",
+       y = "Frequency")
+
+```
+
+
+
+## Situation 3
+
+```{r}
+#| echo: false
+#| warning: false
+#| label: fig-deci
+#| fig-cap: Decimal Error when cleaning
+
+deci_data <- data
+deci_indices <- which(data >= 1 & data <= 1.1)
+deci_data[deci_indices] <- deci_data[deci_indices] / 10
+
+print(mean(deci_data))
+
+deci_data <- data.frame(x = deci_data)
+ggplot(deci_data, aes(x = x)) +
+  geom_histogram(binwidth = 0.2) +
+  labs(title = "Decimal Error when cleaning",
+       x = "Value",
+       y = "Frequency")
+
+```
+
+
+
+
+
+# The Correct Cleaned Set
+
+```{r}
+#| echo: false
+#| warning: false
+#| label: fig-clean
+#| fig-cap: The Distirbution for Raw data
+
+cleaned_data <- data.frame(x = data)
+ggplot(cleaned_data, aes(x = x)) +
+  geom_histogram(binwidth = 0.2) +
+  labs(title = "Cleaned Data",
+       x = "Value",
+       y = "Frequency")
+print(mean(data))
+```
+
+
+
+
+
