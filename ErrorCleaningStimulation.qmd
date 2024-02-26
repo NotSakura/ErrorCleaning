@@ -1,0 +1,165 @@
+---
+title: "Errors in Cleaning Data"
+author: "Shreya Sakura Noskor"
+format: pdf
+date: today
+date-format: long
+thanks: "Code and some data from this paper are available at: [github repo](https://github.com/NotSakura/ErrorCleaning.git)"
+number-sections: true
+bibliography: references.bib
+---
+
+
+# Introduction
+
+Whne taking measurements of data in the real world, many statisticians face the difficulties of cleaning raw data. This may be due to incorrect or missing values in the data or due to the fact that some data needs to be combined in order to perform meaningful analysis. For example it is impossible to take in to consideration the opinions of the entire population of Toronto but we can gather a smaple and clean the data so that they best represent the population.
+
+This paper covers multiple scenarios where errors could happen when taking measurements or cleaning the data. We stimulate this by generating a set using normal distribution and seeing what would happen if: the measurement was wrong, the numbers got changed during the process by being turned into positives or turned into decimals. We also look at the mean for each of these scenarios and graph the normal distribution better to compare them. We see that all the cleaning procedures do give us a better mean but not a better normal distribution compared to the raw/cleaned data. 
+
+The main data we will be looking at is stimulated by a normal distribution whose first couple of values are presented below in @tbl-trueData. 
+
+```{r}
+#| echo: false
+#| warning: false
+#| label: tbl-trueData
+#| tbl-cap: The Raw Data
+
+library(tidyverse)
+library(ggplot2)
+library(knitr)
+library(dplyr)
+
+## The initial data
+data <- rnorm(1000, mean = 1, sd = 1)
+
+set.seed(853)
+head(data) |> kable()
+```
+
+
+
+# The Errors
+This paper was created using R (@citeR) as well as using the help from other packages like @gg, @tidy, @rDplyr, and @rknitr.
+
+
+## Situation 1
+```{r}
+#| echo: false
+#| warning: false
+#| label: fig-memory
+#| fig-cap: Memory/Measuremnet Error when cleaning
+
+mem_err <- data
+mem_err[900:1000] <- data[0:100]
+# This is just to check if the last digits are all different
+check = (tail(mem_err) == tail(data))
+
+mean_mem = mean(mem_err)
+print(mean_mem)
+
+mem_err <- data.frame(x = mem_err)
+ggplot(mem_err, aes(x = x)) +
+  geom_histogram(binwidth = 0.2) +
+  labs(title = "Memory/Measuremnet Error when cleaning",
+       x = "Value",
+       y = "Frequency")
+```
+The first scenario that may lead to an error in cleaning is when we are taking the actual measurement. In this case what happens is that there is an error when try to gather 1000 data points where the amount of data an equipment can hold is 900. so the last 100 data points is actually the repetition of the first 100. In this graph [@fig-memory] we see that the graph does follow normal distribution, visually but the values that are repeated are stored in the same bin meaning that the data is now bias and if not it is inaccurate. Upon a closer investigation at the output of the cleaning we notice that the first 100 elements are positive and hense the historgram is now skewed to the right. 
+
+
+## Situation 2
+
+```{r}
+#| echo: false
+#| warning: false
+#| label: fig-neg
+#| fig-cap: Handleing Negative Error when cleaning
+#| 
+neg_data <- data
+neg_indices <- which(neg_data < 0)
+
+# Select the first half of these indices
+neg_indices <- neg_indices[1:(length(neg_indices) %/% 2)]
+
+# Change half of the negative draws to be positive
+neg_data[neg_indices] <- abs(neg_data[neg_indices])
+
+mean_neg = mean(neg_data)
+print(mean_neg)
+
+neg_data <- data.frame(x = neg_data)
+ggplot(neg_data, aes(x = x)) +
+  geom_histogram(binwidth = 0.2) +
+  labs(title = "Negative Error when cleaning",
+       x = "Value",
+       y = "Frequency")
+
+```
+@fig-neg looks at the case when there is a human error when handling the data. In this case we stimulate the scenario where half of negative values in the original data is turned into a positive. We again see that the distribution is less normal now with more values in the 0 to 1 bins. This means there are more positive numbers then the original data hence it is more left skewed data and it is also inaccurate compared to the original raw data. In this stimulation we had to randomly choose the negative indices that we would turn positive as picking what values to turn negative would not have showcased the entire effect of this stimulation. 
+
+
+## Situation 3
+
+```{r}
+#| echo: false
+#| warning: false
+#| label: fig-deci
+#| fig-cap: Decimal Error when cleaning
+
+deci_data <- data
+deci_indices <- which(data >= 1 & data <= 1.1)
+deci_data[deci_indices] <- deci_data[deci_indices] / 10
+
+mean_deci = mean(deci_data)
+print(mean_deci)
+
+deci_data <- data.frame(x = deci_data)
+ggplot(deci_data, aes(x = x)) +
+  geom_histogram(binwidth = 0.2) +
+  labs(title = "Decimal Error when cleaning",
+       x = "Value",
+       y = "Frequency")
+
+```
+The third scenario that we stimulate in this graph (@fig-deci), is the case when the values get changed again but this time it may seem small. Here we stimulate by filtering the original data for values between 1 to 1.1 and divide by 10 so that those values are now from 0.1 to 0.11 respectively. Initially it may seem like a very small change has been done to a very small subset of the whole data but from @fig-deci, we see that this makes the graph very uneven. This means that there is one bin where it contains the values from 1 to 1.1 and the 0.1 to 0.11 values making it the largest bin in the entire graph. This leads to a very left skewed graph as our stimulated random normal distribution had a mean of 1 and standard deviation of 1 as well. In this stimulation we had to make sure that we only took a small subset of the data to really show the amount of error it would cause. 
+
+
+
+# The Correct Cleaned Set
+
+```{r}
+#| echo: false
+#| warning: false
+#| label: fig-clean
+#| fig-cap: The Distirbution for Raw data
+
+cleaned_data <- data.frame(x = data)
+ggplot(cleaned_data, aes(x = x)) +
+  geom_histogram(binwidth = 0.2) +
+  labs(title = "Cleaned Data",
+       x = "Value",
+       y = "Frequency")
+mean_clean = mean(data)
+print(mean_clean)
+```
+In this graph [@fig-clean], we just stimulate the data with the `rnorm()` function because there is nothing we need to clean in this stimulation. What we see is a mostly normal distribution with a mean of `r mean_clean` which is very accurate because when calling the rnorm function we have mean set to 1. There are no major outliars in this data set that throws the distribution off. Having a mean above 0 is necessary as if we had a mean less then that it mean that our data is the opposite of the raw data. 
+
+
+# Discussion
+## Summary
+In this paper we saw the effects of wrong methods in data cleaning by using stimulation's. We had 3 error cases: mistaking in equipment leading to memory error, mistaking in cleaning leading to change in signs of data, and mistaking in cleaning leading to change in data itself. 
+In @fig-memory, we see that the effect of having data repeating itself is dangerous as it can lead to inaccurate data. The way we can fix is this by making sure our equipment is up to date and can handle the sample size. If not we can go back and check the data to see if there are any obvious repeats, although in some cases that may not work. 
+In @fig-neg we see that converting some negative values in to positive values can skew the data. Also logically thinking, this makes the data inaccurate as well since the data has been tampered with and is now fake. A way to fix this error is to set up systems that doesn't allow anyone to actually change the raw data and make sure certain rules are set in place to diminish such errors. 
+In @fig-deci we see the similar thing as changing the negative values where some bins now carry more data then they originally did. This lead to a slight left skew in the normal distribution. Similar to the negative stimulation the solution to this is to just set protocols in place that do not allow anyone to change the actual raw file without consulting multiple people.
+
+## Compared to Clean Data
+We see that the mean to each scenario is `r mean_mem` [@fig-memory], `r mean_neg` [@fig-neg], `r mean_deci` [@fig-deci] and lastly the actual mean from the original raw data, `r mean_clean`. We see that in each scenario the mean from all the stimulation is very close to 1 but the closets is the repeated data scenario and the original data. The other 2 scenarios have a much higher difference with the mean due to the fact that they changed the actual values of the data so they got farther away. The reason why the repeated scenario sometimes has a much closer mean to 1, as opposed to the original raw data stimulated by using `rnorm()` with mean 1, is due to the fact that it has repeated data. What happened was that the first 100 values may have been close to 1 so when we had repeats of it we essentially increased the weight of those values. The problem with this case is that the weight goes to the first 100 values of the data so if the first 100 data points were outliars it would change the normal distribution and the mean by a lot. This is very unreliable. 
+
+## Concluding thoughts
+Data cleaning may seem like a very simple step but it is very crucial that we are careful with it as one change may lead to a very different result and outcome. There for having simple protocols in place or working with multiple people when cleaning data is a very good idea to pipeline the mistakes so they can get caught early on rather, then later. 
+
+
+# References
+
+
+
