@@ -4,7 +4,7 @@ author: "Shreya Sakura Noskor"
 format: pdf
 date: today
 date-format: long
-thanks: "Code and some data from this paper are available at: [github repo](https://github.com/NotSakura/ErrorCleaning.git)"
+thanks: "Code and some data from this paper are available at: [github repo](https://github.com/NotSakura/ErrorCleaning.git). Reviewed by Hannah Yu"
 number-sections: true
 bibliography: references.bib
 ---
@@ -12,7 +12,7 @@ bibliography: references.bib
 
 # Introduction
 
-Whne taking measurements of data in the real world, many statisticians face the difficulties of cleaning raw data. This may be due to incorrect or missing values in the data or due to the fact that some data needs to be combined in order to perform meaningful analysis. For example it is impossible to take in to consideration the opinions of the entire population of Toronto but we can gather a smaple and clean the data so that they best represent the population.
+When taking measurements of data in the real world, many statisticians face the difficulties of cleaning raw data. This may be due to incorrect or missing values in the data or due to the fact that some data needs to be combined in order to perform meaningful analysis. For example it is impossible to take in to consideration the opinions of the entire population of Toronto but we can gather a sample and clean the data so that they best represent the population.
 
 This paper covers multiple scenarios where errors could happen when taking measurements or cleaning the data. We stimulate this by generating a set using normal distribution and seeing what would happen if: the measurement was wrong, the numbers got changed during the process by being turned into positives or turned into decimals. We also look at the mean for each of these scenarios and graph the normal distribution better to compare them. We see that all the cleaning procedures do give us a better mean but not a better normal distribution compared to the raw/cleaned data. 
 
@@ -33,13 +33,13 @@ library(dplyr)
 data <- rnorm(1000, mean = 1, sd = 1)
 
 set.seed(853)
-head(data) |> kable()
+head(round(data, digits=2)) |> kable()
 ```
 
 
 
 # The Errors
-This paper was created using R (@citeR) as well as using the help from other packages like @gg, @tidy, @rDplyr, and @rknitr.
+This paper was created using R (@citeR) as well as using the help from other packages like ggplot2 [@gg], tidyverse [@tidy], dplyr [@rDplyr], and knitr [@rknitr].
 
 
 ## Situation 1
